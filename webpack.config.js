@@ -8,6 +8,7 @@ const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 const config = {
   entry: [
+    'regenerator-runtime/runtime.js',
     'react-hot-loader/patch',
     './src/index.js'
   ],
