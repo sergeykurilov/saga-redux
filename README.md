@@ -1,4 +1,4 @@
-# xstate
+# Saga Redux
 
 Empty project.
 
@@ -40,5 +40,16 @@ To run unit tests:
 npm test
 ```
 
-## Using Xstate
-
+## Using Redux Saga
+ - Есть блокирующие и не блокирующие вызовы
+ - import {take, takeEvery, takeLatest, takeLeading, put, fork, spawn, select} from 'redux-saga/effects'
+ - call - блокирующий вызов саги
+ - take = примимает название экшена и функцию  
+ - takeEvery - первую функцию которая вызовется
+ - takeLatest = последнюю
+ - takeLeading = берет первый реквест и ждет выполнения саги
+ - select = доступ к стору
+ - spawn = для того чтобы запустить саги независимо от друг друга
+ - fork - неблокирующий вызов саги
+ - put = передать экшн и пейлоад в редюсер
+ - join = для получения саги, для того чтобы в последствии передать в call
