@@ -1,42 +1,45 @@
-import 'regenerator-runtime'
-import {take, takeEvery, takeLatest, put, call, fork, spawn, join, select} from 'redux-saga/effects'
+import {fork, spawn, call, all, delay, take, takeLatest, cancel, actionChannel} from 'redux-saga/effects'
+import 'regenerator-runtime/runtime'
 
-async function swapiGet(pattern) {
-    const request = await fetch(`https://swapi.dev/api/${pattern}`)
-    const data = await request.json();
-    return data;
+export function* fecthPlanets(signal) {
+    console.log('LOAD_SOME_DATA starts')
+
+    const response = yield call(fetch,
+        'https://swapi.dev/api/planets/1/',
+        {signal})
+    const data = yield call([response, response.json])
+
+    console.log('LOAD_SOME_DATA completed  ',data)
 }
 
-export function* loadPeople() {
-    // throw new Error('asdsad')
-    const people = yield call(swapiGet, 'people');
-    yield put({type: 'SET_PEOPLE', payload: people.results})
-    console.log('people')
-    return people
-}
-
-export function* loadPlanets() {
-    const planets = yield call(swapiGet, 'planets');
-    yield put({type: 'SET_PLANETS', payload: planets.results})
-    console.log('planets')
-}
-
-
-export function* workerSaga() {
-    console.log('run parallel')
-    yield call(loadPeople)
-    yield call(loadPlanets)
-    // const people = yield join(task)
-
-    const store = yield select(s => s)
-
-    console.log('finished ', store)
-}
-
-export function* watchLoadDataSaga() {
-    yield takeEvery('LOAD_DATA', workerSaga)
+export function* loadOnAction() {
+    const channel = yield actionChannel('LOAD_SOME_DATA');
+    while (true){
+        yield take(channel)
+        console.log('LOG')
+        yield call(fecthPlanets)
+    }
 }
 
 export default function* rootSaga () {
-    yield fork(watchLoadDataSaga);
+    const sagas = [
+        // loadBasicData,
+        // pageLoadData,
+        loadOnAction];
+
+    const retrySagas = sagas.map(saga => {
+           return spawn(function* () {
+             while (true){
+                 try {
+                     yield call(saga);
+                     break;
+                 } catch (e) {
+                     console.log(e)
+                 }
+             }
+           })
+       })
+
+
+    yield all(retrySagas)
 }
